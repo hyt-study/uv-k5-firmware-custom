@@ -76,10 +76,10 @@ void UI_PrintStringBuffer(const char *pString, uint8_t * buffer, uint32_t char_w
 
         // 1. 半角カタカナ (0xA0 〜 0xDF)
         if (ch >= 0xA0 && ch <= 0xDF) {
-            uint8_t kana_idx = (ch >= 0xB0) ? (ch - 0xB0) : 0;
+            const uint8_t kana_idx = (ch >= 0xB0) ? (ch - 0xB0) : 0;
             if (kana_idx < 48) {
-                for (uint8_t b = 0; b < 6; b++) {
-                    if (offset + b < 128) {
+                for (uint8_t b = 0; b < 7; b++) {
+                    if (offset + b < LCD_WIDTH) {
                         buffer[offset + b] = gFontKana[kana_idx][b];
                     }
                 }
@@ -95,13 +95,12 @@ void UI_PrintStringBuffer(const char *pString, uint8_t * buffer, uint32_t char_w
 
 void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
 {
-    size_t i;
     size_t Length = strlen(pString);
 
     if (End > Start)
         Start += (((End - Start) - (Length * Width)) + 1) / 2;
 
-    for (i = 0; i < Length; i++)
+    for (size_t i = 0; i < Length; i++)
     {
         const uint8_t ch = (uint8_t)pString[i];
         const unsigned int ofs = (unsigned int)Start + (i * Width);
@@ -109,16 +108,26 @@ void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Lin
         // 1. 半角カタカナ (0xA0 〜 0xDF)
         if (ch >= 0xA0 && ch <= 0xDF)
         {
-            uint8_t kana_idx = (ch >= 0xB0) ? (ch - 0xB0) : 0;
-            if (kana_idx < 48) {
-                // カナフォント（7バイト）を描画
-                memcpy(gFrameBuffer[Line + 0] + ofs, gFontKana[kana_idx], 6);
+            const uint8_t kana_idx = (ch >= 0xB0) ? (ch - 0xB0) : 0;
+            if (kana_idx < 48)
+            {
+                // 上段行にカタカナフォントを描画
+                for (uint8_t b = 0; b < 7; b++) {
+                    if (ofs + b < LCD_WIDTH) {
+                        gFrameBuffer[Line + 0][ofs + b] = gFontKana[kana_idx][b];
+                    }
+                }
+                // 下段行はゴミを残さないようクリア
                 if (Line + 1 < 8) {
-                    memset(gFrameBuffer[Line + 1] + ofs, 0, 6);
+                    for (uint8_t b = 0; b < 7; b++) {
+                        if (ofs + b < LCD_WIDTH) {
+                            gFrameBuffer[Line + 1][ofs + b] = 0x00;
+                        }
+                    }
                 }
             }
         }
-        // 2. ASCII英数文字
+        // 2. ASCII英数文字 (gFontBig)
         else if (ch > ' ' && ch < 127)
         {
             const unsigned int index = ch - ' ' - 1;
