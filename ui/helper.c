@@ -77,9 +77,12 @@ void UI_PrintStringBuffer(const char *pString, uint8_t * buffer, uint32_t char_w
         // --- 1. 半角カタカナ (0xB0 〜 0xDF) の描画 ---
         if (ch >= 0xB0 && ch <= 0xDF) {
             const unsigned int kana_idx = ch - 0xB0;
-            // char_width に合わせてコピー（gFontKana は最大7バイト）
-            const uint32_t copy_len = (char_width > 7) ? 7 : char_width;
-            memcpy(buffer + offset, gFontKana[kana_idx], copy_len);
+            // カナは横6ドット幅で描画
+            for (uint8_t b = 0; b < 6; b++) {
+                if (offset + b < 128) {
+                    buffer[offset + b] = gFontKana[kana_idx][b];
+                }
+            }
         }
         // --- 2. 既存のASCII英数記号の描画 ---
         else if (ch > ' ' && ch < 127) {
@@ -87,7 +90,6 @@ void UI_PrintStringBuffer(const char *pString, uint8_t * buffer, uint32_t char_w
             memcpy(buffer + offset, font + index * char_width, char_width);
         }
     }
-}
 
 void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
 {
