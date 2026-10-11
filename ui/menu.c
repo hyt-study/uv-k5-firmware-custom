@@ -122,8 +122,7 @@ const t_menu_item MenuList[] =
 #endif
 	{"BatVol", VOICE_ID_INVALID,                       MENU_VOL           }, // was "VOL"
 	{"RxMode", VOICE_ID_DUAL_STANDBY,                  MENU_TDR           },
-	{"\xBD\xB9\xEB\xC1",    VOICE_ID_SQUELCH,                       MENU_SQL           },
-
+	{(char[]){(char)0xBD, (char)0xB9, (char)0xEB, (char)0xC1, 0}, VOICE_ID_SQUELCH, MENU_SQL },
 	// hidden menu items from here on
 	// enabled if pressing both the PTT and upper side button at power-on
 	{"F Lock", VOICE_ID_INVALID,                       MENU_F_LOCK        },

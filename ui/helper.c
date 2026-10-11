@@ -74,17 +74,18 @@ void UI_PrintStringBuffer(const char *pString, uint8_t * buffer, uint32_t char_w
         const uint8_t ch = (uint8_t)pString[i];
         const uint32_t offset = i * char_spacing + 1;
 
-        // --- 1. 半角カタカナ (0xB0 〜 0xDF) の描画 ---
-        if (ch >= 0xB0 && ch <= 0xDF) {
-            const unsigned int kana_idx = ch - 0xB0;
-            // カナは横6ドット幅で描画
-            for (uint8_t b = 0; b < 6; b++) {
-                if (offset + b < 128) {
-                    buffer[offset + b] = gFontKana[kana_idx][b];
+        // 1. 半角カタカナ (0xA0 〜 0xDF)
+        if (ch >= 0xA0 && ch <= 0xDF) {
+            uint8_t kana_idx = (ch >= 0xB0) ? (ch - 0xB0) : 0;
+            if (kana_idx < 48) {
+                for (uint8_t b = 0; b < 6; b++) {
+                    if (offset + b < 128) {
+                        buffer[offset + b] = gFontKana[kana_idx][b];
+                    }
                 }
             }
         }
-        // --- 2. 既存のASCII英数記号の描画 ---
+        // 2. ASCII英数記号
         else if (ch > ' ' && ch < 127) {
             const unsigned int index = ch - ' ' - 1;
             memcpy(buffer + offset, font + index * char_width, char_width);
@@ -105,18 +106,19 @@ void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Lin
         const uint8_t ch = (uint8_t)pString[i];
         const unsigned int ofs = (unsigned int)Start + (i * Width);
 
-        // --- 1. 半角カタカナ (0xB0 〜 0xDF) の描画 ---
-        if (ch >= 0xB0 && ch <= 0xDF)
+        // 1. 半角カタカナ (0xA0 〜 0xDF)
+        if (ch >= 0xA0 && ch <= 0xDF)
         {
-            const unsigned int kana_idx = ch - 0xB0;
-            // 上段行にカタカナを描画（7バイト）
-            memcpy(gFrameBuffer[Line + 0] + ofs, gFontKana[kana_idx], 7);
-            // 下段行はゴミが残らないようクリア
-            if (Line + 1 < 8) {
-                memset(gFrameBuffer[Line + 1] + ofs, 0, 7);
+            uint8_t kana_idx = (ch >= 0xB0) ? (ch - 0xB0) : 0;
+            if (kana_idx < 48) {
+                // カナフォント（7バイト）を描画
+                memcpy(gFrameBuffer[Line + 0] + ofs, gFontKana[kana_idx], 6);
+                if (Line + 1 < 8) {
+                    memset(gFrameBuffer[Line + 1] + ofs, 0, 6);
+                }
             }
         }
-        // --- 2. 既存のASCII英数文字（gFontBig）の描画 ---
+        // 2. ASCII英数文字
         else if (ch > ' ' && ch < 127)
         {
             const unsigned int index = ch - ' ' - 1;
