@@ -22,6 +22,7 @@
 #include "ui/helper.h"
 #include "ui/inputbox.h"
 #include "misc.h"
+#include "font_kana.h"
 
 #ifndef ARRAY_SIZE
 	#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof((arr)[0]))
@@ -67,15 +68,25 @@ void UI_GenerateChannelStringEx(char *pString, const bool bShowPrefix, const uin
 
 void UI_PrintStringBuffer(const char *pString, uint8_t * buffer, uint32_t char_width, const uint8_t *font)
 {
-	const size_t Length = strlen(pString);
-	const unsigned int char_spacing = char_width + 1;
-	for (size_t i = 0; i < Length; i++) {
-		const unsigned int index = pString[i] - ' ' - 1;
-		if (pString[i] > ' ' && pString[i] < 127) {
-			const uint32_t offset = i * char_spacing + 1;
-			memcpy(buffer + offset, font + index * char_width, char_width);
-		}
-	}
+    const size_t Length = strlen(pString);
+    const unsigned int char_spacing = char_width + 1;
+    for (size_t i = 0; i < Length; i++) {
+        const uint8_t ch = (uint8_t)pString[i];
+        const uint32_t offset = i * char_spacing + 1;
+
+        // --- 1. 半角カタカナ (0xB0 〜 0xDF) の描画 ---
+        if (ch >= 0xB0 && ch <= 0xDF) {
+            const unsigned int kana_idx = ch - 0xB0;
+            // char_width に合わせてコピー（gFontKana は最大7バイト）
+            const uint32_t copy_len = (char_width > 7) ? 7 : char_width;
+            memcpy(buffer + offset, gFontKana[kana_idx], copy_len);
+        }
+        // --- 2. 既存のASCII英数記号の描画 ---
+        else if (ch > ' ' && ch < 127) {
+            const unsigned int index = ch - ' ' - 1;
+            memcpy(buffer + offset, font + index * char_width, char_width);
+        }
+    }
 }
 
 void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
