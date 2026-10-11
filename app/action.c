@@ -417,8 +417,12 @@ static void ACTION_AlarmOr1750(const bool b1750)
 	(void)b1750;
 	gInputBoxIndex = 0;
 
-	gFlagPrepareTX = gAlarmState != ALARM_STATE_OFF;
+	// 【修正前】
+    // gFlagPrepareTX = gAlarmState != ALARM_STATE_OFF;
 
+    // 【修正後】送信フラグを常に false に固定
+    gFlagPrepareTX = false;
+	
 	if (gScreenToDisplay != DISPLAY_MENU)     // 1of11 .. don't close the menu
 		gRequestDisplayScreen = DISPLAY_MAIN;
 }

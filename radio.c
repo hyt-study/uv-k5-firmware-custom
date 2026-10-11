@@ -755,6 +755,9 @@ void RADIO_SetupRegisters(bool switchToForeground)
 
 void RADIO_SetTxParameters(void)
 {
+	// 送信パラメータ設定・パワーアンプ通電を物理的にスキップ
+    return;
+	
 	BK4819_FilterBandwidth_t Bandwidth = gCurrentVfo->CHANNEL_BANDWIDTH;
 
 	AUDIO_AudioPathOff();
@@ -899,6 +902,11 @@ void RADIO_SetVfoState(VfoState_t State)
 
 void RADIO_PrepareTX(void)
 {
+	// 送信を恒久的に禁止（受信専用機化）
+    RADIO_SetVfoState(VFO_STATE_TX_DISABLE);
+    AUDIO_PlayBeep(BEEP_500HZ_60MS_DOUBLE_BEEP_OPTIONAL);
+    return;
+	
 	VfoState_t State = VFO_STATE_NORMAL;  // default to OK to TX
 
 	if (gEeprom.DUAL_WATCH != DUAL_WATCH_OFF)
