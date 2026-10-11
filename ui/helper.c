@@ -90,6 +90,7 @@ void UI_PrintStringBuffer(const char *pString, uint8_t * buffer, uint32_t char_w
             memcpy(buffer + offset, font + index * char_width, char_width);
         }
     }
+}
 
 void UI_PrintString(const char *pString, uint8_t Start, uint8_t End, uint8_t Line, uint8_t Width)
 {
